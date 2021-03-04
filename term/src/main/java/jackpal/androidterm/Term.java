@@ -16,6 +16,7 @@
 
 package jackpal.androidterm;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 import jackpal.androidterm.compat.ActionBarCompat;
 import jackpal.androidterm.compat.ActivityCompat;
@@ -75,6 +76,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import static android.content.Intent.FLAG_INCLUDE_STOPPED_PACKAGES;
 
 /**
  * A terminal emulator activity.
@@ -139,8 +142,6 @@ public class Term extends Activity implements UpdateCallback, SharedPreferences.
             }
         }
     };
-    // Available on API 12 and later
-    private static final int FLAG_INCLUDE_STOPPED_PACKAGES = 0x20;
 
     private TermService mTermService;
     private ServiceConnection mTSConnection = new ServiceConnection() {
@@ -324,6 +325,7 @@ public class Term extends Activity implements UpdateCallback, SharedPreferences.
 
     private Handler mHandler = new Handler();
 
+    @SuppressLint("InvalidWakeLockTag")
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -376,7 +378,7 @@ public class Term extends Activity implements UpdateCallback, SharedPreferences.
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TermDebug.LOG_TAG);
-        WifiManager wm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        WifiManager wm = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         int wifiLockMode = WifiManager.WIFI_MODE_FULL;
         if (AndroidCompat.SDK >= 12) {
             wifiLockMode = WIFI_MODE_FULL_HIGH_PERF;

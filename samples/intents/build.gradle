@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    compileSdkVersion 26
+    buildToolsVersion "29.0.9"
 
     defaultConfig {
         applicationId "jackpal.androidterm.sample.intents"
-        minSdkVersion 4
-        targetSdkVersion 22
+        minSdkVersion 11
+        targetSdkVersion 26
     }
 
     buildTypes {

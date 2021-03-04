@@ -16,6 +16,7 @@
 
 package jackpal.androidterm;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -26,6 +27,7 @@ import android.net.Uri;
 import android.os.*;
 import android.content.Intent;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.app.Notification;
@@ -64,7 +66,7 @@ public class TermService extends Service implements TermSession.FinishCallback
 
     /* This should be @Override if building with API Level >=5 */
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return COMPAT_START_STICKY;
+        return START_STICKY_COMPATIBILITY;
     }
 
     @Override
@@ -80,6 +82,7 @@ public class TermService extends Service implements TermSession.FinishCallback
         }
     }
 
+
     @Override
     public void onCreate() {
         // should really belong to the Application class, but we don't use one...
@@ -88,22 +91,29 @@ public class TermService extends Service implements TermSession.FinishCallback
         String defValue = getDir("HOME", MODE_PRIVATE).getAbsolutePath();
         String homePath = prefs.getString("home_path", defValue);
         editor.putString("home_path", homePath);
-        editor.commit();
+        editor.apply();
 
         compat = new ServiceForegroundCompat(this);
         mTermSessions = new SessionList();
 
         /* Put the service in the foreground. */
-        Notification notification = new Notification(R.drawable.ic_stat_service_notification_icon, getText(R.string.service_notify_text), System.currentTimeMillis());
-        notification.flags |= Notification.FLAG_ONGOING_EVENT;
         Intent notifyIntent = new Intent(this, Term.class);
         notifyIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
-        notification.setLatestEventInfo(this, getText(R.string.application_terminal), getText(R.string.service_notify_text), pendingIntent);
-        compat.startForeground(RUNNING_NOTIFICATION, notification);
+
+        Notification notification  = new NotificationCompat.Builder(this)
+                .setContentIntent(pendingIntent)
+                .setSmallIcon(R.drawable.ic_stat_service_notification_icon)
+                .setWhen( System.currentTimeMillis())
+                .setContentTitle(getString(R.string.application_terminal))
+                .setContentText(getString(R.string.service_notify_text))
+                .setAutoCancel(true)
+                .setOngoing(true)
+                .build();
+
+        startForeground(RUNNING_NOTIFICATION, notification);
 
         Log.d(TermDebug.LOG_TAG, "TermService started");
-        return;
     }
 
     @Override
